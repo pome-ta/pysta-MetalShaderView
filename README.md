@@ -32,9 +32,14 @@ kernel void compute(texture2d<float, access::write> output [[texture(0)]],
 細かいことは、[Using MetalKit part 12](https://metalkit.org/2016/05/18/using-metalkit-part-12/) を読んで欲しい
 
 
+
+`kernel` でやってる
+
+
 ## todo
 
 - [ ] touch 対応
+- [ ] アスペクトのGLSL 的なお作法とか
 - [ ] Metal 全体的な対応
 - [ ] コード整理
 
