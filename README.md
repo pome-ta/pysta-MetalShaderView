@@ -36,6 +36,12 @@ kernel void compute(texture2d<float, access::write> output [[texture(0)]],
 `kernel` でやってる
 
 
+## 余談
+
+[こっち](https://github.com/pome-ta/pystaMetalStudy) で、Metal のPythonista 実装実験中 🔬
+
+
+
 ## todo
 
 - [ ] touch 対応
