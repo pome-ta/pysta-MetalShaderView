@@ -6,7 +6,7 @@
 
 ## 使い方
 
-- [metalShaderView.py](https://github.com/pome-ta/pysta-MetalShaderView/metalShaderView.py) をPythonista へ
+- [metalShaderView.py](https://github.com/pome-ta/pysta-MetalShaderView/blob/main/metalShaderView.py) をPythonista へ
 - [Editor Action](http://omz-software.com/pythonista/docs/ios/editor.html#module-editor) を設定
 - 編集しているShader コード上でActionを実行
 
@@ -27,7 +27,7 @@ kernel void compute(texture2d<float, access::write> output [[texture(0)]],
                     uint2 gid [[thread_position_in_grid]])
 ```
 
-のこ形式は守ること😤
+この形式は守ること😤
 
 細かいことは、[Using MetalKit part 12](https://metalkit.org/2016/05/18/using-metalkit-part-12/) を読んで欲しい
 
