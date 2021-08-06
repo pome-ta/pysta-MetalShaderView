@@ -29,30 +29,18 @@ class MetalView(ui.View):
 
   def touch_began(self, touch):
     _x, _y = [i / self.s_size for i in touch.location]
-    #self.touch_txt.text = f'{str(touch.location)}, {_x}:{_y}'
     self.mouse[0] = _x
     self.mouse[1] = _y
     
     
   def touch_moved(self, touch):
     _x, _y = touch.location
-    # xxx: 範囲外数値はザル
     if 0 < _x < self.s_size and 0 < _y < self.s_size:
       _x /= self.s_size
       _y /= self.s_size
-    elif _x < 0:
-      _x = _y = 0.0
-    elif _y < 0:
-      _y = _x = 0.0
-    elif _x > self.s_size:
-      _x = _y = 1.0
-    elif _y > self.s_size:
-      _y = _x = 1.0
-    else:
-      _x = _y = 0.0
-    #self.touch_txt.text = f'{_x}:{_y} :{str(touch.location)}'
-    self.mouse[0] = _x
-    self.mouse[1] = _y
+      self.mouse[0] = _x
+      self.mouse[1] = _y
+    
 
   def view_did_load(self):
     mtkView = MTKView.alloc()
