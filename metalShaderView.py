@@ -5,8 +5,8 @@ from objc_util import c, create_objc_class, ObjCClass, ObjCInstance
 import ui
 import editor
 
-
 shader_path = pathlib.Path(editor.get_path())
+
 
 # --- load objc classes
 MTKView = ObjCClass('MTKView')
@@ -28,19 +28,24 @@ class MetalView(ui.View):
     self.add_subview(self.touch_txt)
 
   def touch_began(self, touch):
-    _x, _y = [i / self.s_size for i in touch.location]
-    self.mouse[0] = _x
-    self.mouse[1] = _y
-    
-    
+    self.passToShader(touch)
+
   def touch_moved(self, touch):
+    self.passToShader(touch)
+
+  def passToShader(self, touch):
     _x, _y = touch.location
-    if 0 < _x < self.s_size and 0 < _y < self.s_size:
+    if 0 < _x < self.s_size:
       _x /= self.s_size
+      self.pre_mouse[0] = self.mouse[0] = _x
+    else:
+      self.mouse[0] = self.pre_mouse[0]
+
+    if 0 < _y < self.s_size:
       _y /= self.s_size
-      self.mouse[0] = _x
-      self.mouse[1] = _y
-    
+      self.pre_mouse[1] = self.mouse[1] = _y
+    else:
+      self.mouse[1] = self.pre_mouse[1]
 
   def view_did_load(self):
     mtkView = MTKView.alloc()
@@ -71,22 +76,27 @@ class MetalView(ui.View):
 
     # --- registerShaders
     source = shader_path.read_text('utf-8')
-    library = device.newLibraryWithSource_options_error_(source, err_ptr, err_ptr)
+    library = device.newLibraryWithSource_options_error_(
+      source, err_ptr, err_ptr)
     kernel = library.newFunctionWithName_('compute')
 
     # maxTotalThreadsPerThreadgroup: 1024
     # threadExecutionWidth: 32
-    renderer.cps = device.newComputePipelineStateWithFunction_error_(kernel, err_ptr)
+    renderer.cps = device.newComputePipelineStateWithFunction_error_(
+      kernel, err_ptr)
     renderer.tew = renderer.cps.threadExecutionWidth()
     renderer.mttpt = renderer.cps.maxTotalThreadsPerThreadgroup()
 
     renderer.timer = ctypes.c_float(0.0)
-    renderer.timerBuffer = device.newBufferWithLength_options_(ctypes.sizeof(renderer.timer), 0)
+    renderer.timerBuffer = device.newBufferWithLength_options_(
+      ctypes.sizeof(renderer.timer), 0)
     self.timer = renderer.timer
-    
-    renderer.mouse = (ctypes.c_float * 2)(0.0, 0.0)
-    renderer.mouseBuffer = device.newBufferWithLength_options_(ctypes.sizeof(renderer.mouse), 0)
+
+    renderer.mouse = (ctypes.c_float * 2)(-1.0, -1.0)
+    renderer.mouseBuffer = device.newBufferWithLength_options_(
+      ctypes.sizeof(renderer.mouse), 0)
     self.mouse = renderer.mouse
+    self.pre_mouse = self.mouse
 
     return renderer
 
@@ -107,10 +117,12 @@ def drawInMTKView_(_self, _cmd, _view):
   # --- update
   self.timer.value += 0.01
   bufferPointer = self.timerBuffer.contents()
-  ctypes.memmove(bufferPointer, ctypes.byref(self.timer), ctypes.sizeof(self.timer))
-  
+  ctypes.memmove(bufferPointer,
+                 ctypes.byref(self.timer), ctypes.sizeof(self.timer))
+
   bufferPointer = self.mouseBuffer.contents()
-  ctypes.memmove(bufferPointer, ctypes.byref(self.mouse), ctypes.sizeof(self.mouse))
+  ctypes.memmove(bufferPointer,
+                 ctypes.byref(self.mouse), ctypes.sizeof(self.mouse))
 
   _width = 8
   _height = 8
@@ -119,7 +131,8 @@ def drawInMTKView_(_self, _cmd, _view):
   t_w = drawable.texture().width()
   t_h = drawable.texture().height()
   threadGroups = (-(-t_w // _width), -(-t_h // _height), 1)
-  commandEncoder.dispatchThreadgroups_threadsPerThreadgroup_(threadGroups, threadGroupCount)
+  commandEncoder.dispatchThreadgroups_threadsPerThreadgroup_(
+    threadGroups, threadGroupCount)
 
   commandEncoder.endEncoding()
   commandBuffer.presentDrawable_(drawable)
@@ -138,7 +151,6 @@ PyRenderer = create_objc_class(
   protocols=['MTKViewDelegate'])
 
 
-
 class MainView(ui.View):
   def __init__(self, *args, **kwargs):
     ui.View.__init__(self, *args, **kwargs)
@@ -148,7 +160,7 @@ class MainView(ui.View):
     self.metal = MetalView()
     self.metal.flex = 'LRTB'
     self.add_subview(self.metal)
-    
+
     self.log_txt = ui.TextView()
     self.log_txt.font = ('Source Code Pro', 16)
     self.log_txt.bg_color = 1
@@ -157,19 +169,19 @@ class MainView(ui.View):
     log = self.get_log()
     self.log_txt.text = f'time\t\t: {str(log[0])}\ntouch_x\t: {str(log[1])}\ntouch_y\t: {str(log[2])}'
     self.add_subview(self.log_txt)
-    
+
   def update(self):
     log = self.get_log()
     self.log_txt.text = f'time\t\t: {str(log[0])}\ntouch_x\t: {str(log[1])}\ntouch_y\t: {str(log[2])}'
-    
+
   def get_log(self):
     timer = self.metal.timer.value
     mouse_x = self.metal.mouse[0]
     mouse_y = self.metal.mouse[1]
     return [timer, mouse_x, mouse_y]
-    
 
 
 if __name__ == '__main__':
   main_view = MainView()
   main_view.present(style='fullscreen', orientations=['portrait'])
+

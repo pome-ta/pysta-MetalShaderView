@@ -45,7 +45,8 @@ kernel void compute(texture2d<float, access::write> output [[texture(0)]],
 ## todo
 
 - [x] touch 対応
-  -  Shader に投げる数値要確認
+  - [x] Shader に投げる数値要確認
+    - 画面外の調整した
 - [ ] アスペクトのGLSL 的なお作法とか
 - [ ] Metal 全体的な対応
 - [ ] コード整理
