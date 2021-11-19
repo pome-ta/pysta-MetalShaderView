@@ -1,12 +1,16 @@
-import pathlib
+from pathlib import Path
 import ctypes
 
 from objc_util import c, create_objc_class, ObjCClass, ObjCInstance
 import ui
 import editor
 
-shader_path = pathlib.Path(editor.get_path())
+shader_path = Path(editor.get_path())
 
+if not(str(shader_path) in '.metal'):
+  root_path = Path(__file__).parent
+  shader_path = root_path / Path('./Shaders.metal')
+  
 
 # --- load objc classes
 MTKView = ObjCClass('MTKView')
