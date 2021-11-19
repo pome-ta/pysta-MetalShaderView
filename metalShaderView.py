@@ -120,12 +120,12 @@ def drawInMTKView_(_self, _cmd, _view):
 
   # --- update
   self.timer.value += 0.01
-  bufferPointer = self.timerBuffer.contents()
-  ctypes.memmove(bufferPointer,
+  timerBufferPointer = self.timerBuffer.contents()
+  ctypes.memmove(timerBufferPointer,
                  ctypes.byref(self.timer), ctypes.sizeof(self.timer))
 
-  bufferPointer = self.mouseBuffer.contents()
-  ctypes.memmove(bufferPointer,
+  mouseBufferPointer = self.mouseBuffer.contents()
+  ctypes.memmove(mouseBufferPointer,
                  ctypes.byref(self.mouse), ctypes.sizeof(self.mouse))
 
   _width = 8
